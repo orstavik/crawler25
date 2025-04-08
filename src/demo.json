@@ -1,0 +1,80 @@
+{
+  "page": [
+    {
+      "id": "home",
+      "title": "Home",
+      "description": "Welcome to the Bookstore",
+      "books": [
+        "book/1",
+        "book/2"
+      ]
+    }
+  ],
+  "author": [
+    {
+      "id": 1,
+      "name": "George Orwell",
+      "country": "UK",
+      "image_url": "/images/author/george_orwell.jpg"
+    },
+    {
+      "id": 2,
+      "name": "Haruki Murakami",
+      "country": "Japan",
+      "image_url": "/images/author/haruki_murakami.jpg"
+    }
+  ],
+  "publisher": [
+    {
+      "id": 1,
+      "name": "Penguin Books",
+      "country": "UK",
+      "logo_url": "/images/publisher/penguin_books_logo.png"
+    },
+    {
+      "id": 2,
+      "name": "Kodansha",
+      "country": "Japan",
+      "logo_url": "/images/publisher/kodansha_logo.png"
+    }
+  ],
+  "book": [
+    {
+      "id": 1,
+      "title": "1984",
+      "year": 1949,
+      "author": [
+        "author/1"
+      ],
+      "publisher": [
+        "publisher/1"
+      ],
+      "cover_url": "/images/books/1984_cover.jpg"
+    },
+    {
+      "id": 2,
+      "title": "Norwegian Wood",
+      "year": 1987,
+      "author": [
+        "author/2"
+      ],
+      "publisher": [
+        "publisher/2"
+      ],
+      "cover_url": "/images/books/norwegian_wood_cover.jpg"
+    },
+    {
+      "id": 3,
+      "title": "Kafka on the Shore",
+      "year": 2002,
+      "author": [
+        "author/2",
+        "author/1"
+      ],
+      "publisher": [
+        "publisher/2"
+      ],
+      "cover_url": "/images/books/kafka_on_the_shore_cover.jpg"
+    }
+  ]
+}
