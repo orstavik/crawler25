@@ -1,0 +1,60 @@
+Hello sunshine!
+<script type="module">
+  import { pages } from '../src/demo.js';
+  import { tokenize } from '../src/tokenizer.js';
+  import { TaggattyMap } from '../src/taggatty.js';
+
+  const tokenPages = {};
+  for (const page in pages) {
+    tokenPages[page] = tokenize(pages[page]);
+    tokenPages[page].raw = pages[page];
+  }
+
+  const taggattyMap = TaggattyMap(tokenPages);
+  console.log(taggattyMap);
+
+
+  function displayTokens({ tokens, types }) {
+    return tokens.map((t, i) => `<span class="${types[i]}">${t.replaceAll("<", "&lt;")}</span>`);
+  }
+
+  const tokenPage = tokenPages['book/2'];
+  document.querySelector("div").innerHTML = displayTokens(tokenPage).join("");
+</script>
+
+<style>
+  span {
+    white-space: pre;
+    font-weight: bold;
+  }
+
+  span.t {
+    color: oklch(from blue l calc(c * 0.4) h);
+  }
+
+  span.w {
+    color: darkgrey;
+  }
+
+  span.v {
+    color: green;
+  }
+
+  span.x {
+    color: orange;
+  }
+
+  span.\= {
+    color: lightblue;
+  }
+
+  span.n {
+    color: blue;
+  }
+
+  span.error {
+    color: red;
+  }
+</style>
+<div style="border: 5px solid green;">
+</div>
