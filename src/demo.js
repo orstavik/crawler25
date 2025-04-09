@@ -116,10 +116,10 @@ function generateSitePages(urls, renderers) {
     const entity = getByRef(url);
     res[url] = entity ? renderers[table](entity) :
       `<!DOCTYPE html>
-    <html><body><h1>Page not found</h1></body></html>`;
+    <html><body><h1>Page ${url} not found</h1></body></html>`;
   }
   return res;
 }
 
 export const pages = generateSitePages(URLS, RENDERERS);
-// console.log(JSON.stringify(pages, null, 2));
+console.log(pages);

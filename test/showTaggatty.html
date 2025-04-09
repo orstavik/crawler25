@@ -25,5 +25,26 @@ Hello sunshine!
     return res;
   }
 
-  document.body.append(displayDiffTable(diffTable(tokenPages)));
+  function dictDictMap(dict, mapper) {
+    const res = {};
+    for (const key in dict) {
+      res[key] = {};
+      const inner = dict[key];
+      for (const key2 in inner)
+        res[key][key2] = mapper(inner[key2]);
+    }
+    return res;
+  }
+
+  const diffMap = diffTable(tokenPages);
+  const diffValueMap = dictDictMap(diffMap, (abArray) => {
+    const { a, b } = abArray[0];
+    const firstIsSame = a.every((v, i) => v === b[i]);
+    return abArray.length;
+    //
+    //if the first is the same, then we filter on 
+  });
+
+  //what should we print from the diffMap
+  document.body.append(displayDiffTable(diffValueMap));
 </script>

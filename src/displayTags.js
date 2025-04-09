@@ -19,21 +19,20 @@ function webComponent(name, style, template) {
 
 export function displayTokens(processed) {
   const css = /*css*/`
-  :host { display: block; }
-  :host { white-space: pre; border: 5px solid green; }
-  div:hover span[taggatty=""]{ color: transparent; }
+  div { white-space: pre; border: 5px solid green; }
+  div:hover > span[taggatty=""]{ color: transparent; }
   span.t { color: steelblue; }
   span.w { color: darkgrey; }
   span.v { color: green; }
   span.x { color: orange; }
-  span.\= { color: lightblue; }
+  span.\\= { color: lightblue; }
   span.n { color: blue; }
   span.error { color: red; }
   `;
   let { tokens, types, taggatty } = processed;
   tokens = tokens.map((t) => t.replaceAll("<", "&lt;"));
   const spans = tokens.map((t, i) => `<span taggatty="${taggatty[i]}" class="${types[i]}">${t}</span>`).join("");
-  return webComponent("TextElement", css, spans);
+  return webComponent("TextElement", css, `<div>${spans}</div>`);
 }
 
 export function displayDiffTable(diffTable) {
@@ -44,7 +43,7 @@ export function displayDiffTable(diffTable) {
     html += `<tr><th>${page}</th>`;
     html += "<td>.</td>".repeat(i++);
     for (const [page2, diff] of Object.entries(diffs)) {
-      html += `<td>${diff.length}</td>`;
+      html += `<td>${diff}</td>`;
     }
     html += '</tr>';
   }
