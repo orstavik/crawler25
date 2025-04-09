@@ -2,6 +2,7 @@ Hello sunshine!
 <script type="module">
   import { pages } from '../src/demo.js';
   import { tokenize, toTaggatty } from '../src/tokenizer.js';
+  import { displayTokens } from '../src/displayTags.js';
 
   const tokenPages = {};
   for (const page in pages) {
@@ -12,52 +13,5 @@ Hello sunshine!
 
   const firstInTaggatty = Object.values(tokenPages)[0];
 
-  function displayTokens(processed) {
-    const { tokens, types, taggatty } = processed;
-    return tokens.map((t, i) => `<span taggatty="${taggatty[i]}" class="${types[i]}">${t.replaceAll("<", "&lt;")}</span>`);
-  }
-
-  document.querySelector("div").innerHTML = displayTokens(firstInTaggatty).join("");
+  document.body.insertAdjacentHTML('beforeend', displayTokens(firstInTaggatty));
 </script>
-
-<style>
-  div:hover span::before {
-    content: attr(taggatty);
-    color: unset;
-  }
-
-  span {
-    white-space: pre;
-    font-weight: bold;
-  }
-
-  span.t {
-    color: oklch(from blue l calc(c * 0.4) h);
-  }
-
-  span.w {
-    color: darkgrey;
-  }
-
-  span.v {
-    color: green;
-  }
-
-  span.x {
-    color: orange;
-  }
-
-  span.\= {
-    color: lightblue;
-  }
-
-  span.n {
-    color: blue;
-  }
-
-  span.error {
-    color: red;
-  }
-</style>
-<div style="border: 5px solid green;">
-</div>

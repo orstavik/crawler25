@@ -29,9 +29,8 @@ export function toTaggatty({ tokens, types }) { //
   let res = [];
   for (let i = 0; i < types.length; i++) {
     const type = types[i];
-    if (type === "t" || type === "n") res.push(tokens[i]);
+    if (type === "t" || type === "n" || type === "c") res.push(tokens[i]);
     else if (type === "s") res.push(" ");
-    else if (type === "U") res.push("$");
     else if (type === "x") res.push("!");
     else res.push("");
   }
