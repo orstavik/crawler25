@@ -1,6 +1,6 @@
 Hello sunshine!
 <script type="module">
-  import { diffAsArray } from 'https://cdn.jsdelivr.net/gh/orstavik/making-a@5/difference.js';
+  import { diffAsArray } from 'https://cdn.jsdelivr.net/gh/orstavik/making-a@7/difference.js';
   import { pages } from '../src/demo.js';
   import { tokenize, toTaggatty } from '../src/tokenizer.js';
   import { displayTokens, displayDiffTable } from '../src/displayTags.js';
@@ -19,8 +19,12 @@ Hello sunshine!
     const res = {};
     for (let [page, obj] = pages.shift(); page && pages.length; [page, obj] = pages.shift()) {
       res[page] = {};
-      for (const [page2, obj2] of pages)
-        res[page][page2] = diffAsArray(obj.taggatty, obj2.taggatty);
+      for (const [page2, obj2] of pages) {
+        const diff = diffAsArray(obj.taggatty, obj2.taggatty);
+        const diffA = diff.map(({ a, b }) => b ? "0".repeat(a.length) : "1".repeat(a.length)).join('');
+        const diffB = diff.map(({ a, b }) => b ? "0".repeat(b.length) : "1".repeat(a.length)).join('');
+        res[page][page2] = { diff, a: { ...obj, diff: diffA }, b: { ...obj2, diff: diffB } };
+      }
     }
     return res;
   }
@@ -37,14 +41,20 @@ Hello sunshine!
   }
 
   const diffMap = diffTable(tokenPages);
-  const diffValueMap = dictDictMap(diffMap, (abArray) => {
-    const { a, b } = abArray[0];
-    const firstIsSame = a.every((v, i) => v === b[i]);
-    return abArray.length;
-    //
-    //if the first is the same, then we filter on 
-  });
+  const diffValueMap = dictDictMap(diffMap, ({ diff }) => diff.length);
 
-  //what should we print from the diffMap
   document.body.append(displayDiffTable(diffValueMap));
+
+  let xxx = 0;
+  document.body.lastElementChild.addEventListener("click", e => {
+    const target = e.composedPath()[0];
+    if (!target.matches("td[page][page2]"))
+      return;
+    const page = target.getAttribute('page');
+    const page2 = target.getAttribute('page2');
+    const { diff, a, b } = diffMap[page][page2];
+    document.body.append(displayTokens(xxx++ ? b : a));
+    // document.body.append(displayTokens(b));
+    console.log(`Clicked on diff between ${page} and ${page2}`);
+  });
 </script>

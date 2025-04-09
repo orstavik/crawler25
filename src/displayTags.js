@@ -20,30 +20,31 @@ function webComponent(name, style, template) {
 export function displayTokens(processed) {
   const css = /*css*/`
   div { white-space: pre; border: 5px solid green; }
-  div:hover > span[taggatty=""]{ color: transparent; }
-  span.t { color: steelblue; }
-  span.w { color: darkgrey; }
-  span.v { color: green; }
-  span.x { color: orange; }
-  span.\\= { color: lightblue; }
-  span.n { color: blue; }
-  span.error { color: red; }
+  :hover > span[taggatty=""]{ color: transparent; }
+  .t { color: steelblue; }
+  .w { color: darkgrey; }
+  .v { color: green; }
+  .x { color: orange; }
+  .\\= { color: lightblue; }
+  .n { color: blue; }
+  .error { color: red; }
+  .diff { background-color: yellow; }
   `;
-  let { tokens, types, taggatty } = processed;
+  let { tokens, types, taggatty, diff = [] } = processed;
   tokens = tokens.map((t) => t.replaceAll("<", "&lt;"));
-  const spans = tokens.map((t, i) => `<span taggatty="${taggatty[i]}" class="${types[i]}">${t}</span>`).join("");
+  const spans = tokens.map((t, i) => { return `<span taggatty="${taggatty[i]}" class="${types[i]} ${+diff[i] ? "diff" : ""}">${t}</span>` }).join("");
   return webComponent("TextElement", css, `<div>${spans}</div>`);
 }
 
 export function displayDiffTable(diffTable) {
   let html = '<table>';
-  html += '<tr>' + Object.keys(diffTable).map(page => `<th>${page}</th>`).join("") + '</tr>';
+  html += '<tr><th>x</th>' + Object.keys(Object.values(diffTable)[0]).map(page => `<th>${page}</th>`).join("") + '</tr>';
   let i = 0;
   for (const [page, diffs] of Object.entries(diffTable)) {
     html += `<tr><th>${page}</th>`;
     html += "<td>.</td>".repeat(i++);
     for (const [page2, diff] of Object.entries(diffs)) {
-      html += `<td>${diff}</td>`;
+      html += `<td page="${page}" page2="${page2}">${diff}</td>`;
     }
     html += '</tr>';
   }
