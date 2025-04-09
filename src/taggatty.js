@@ -4,9 +4,9 @@ function toTaggatty(tokens, types) { //
     const type = types[i];
     if (type === "t" || type === "n") res.push(tokens[i]);
     else if (type === "s") res.push(" ");
-    // else if (type === "T") res.push("#");
-    else if (type === "C") res.push("$");
+    else if (type === "U") res.push("$");
     else if (type === "x") res.push("!");
+    else res.push("");
   }
   return res;
 }

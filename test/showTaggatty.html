@@ -1,28 +1,31 @@
 Hello sunshine!
 <script type="module">
   import { pages } from '../src/demo.js';
-  import { tokenize } from '../src/tokenizer.js';
-  import { TaggattyMap } from '../src/taggatty.js';
+  import { tokenize, toTaggatty } from '../src/tokenizer.js';
 
   const tokenPages = {};
   for (const page in pages) {
     tokenPages[page] = tokenize(pages[page]);
-    tokenPages[page].raw = pages[page];
+    tokenPages[page].taggatty = toTaggatty(tokenPages[page]);
+    tokenPages[page].url = page;
   }
 
-  const taggattyMap = TaggattyMap(tokenPages);
-  console.log(taggattyMap);
+  const firstInTaggatty = Object.values(tokenPages)[0];
 
-
-  function displayTokens({ tokens, types }) {
-    return tokens.map((t, i) => `<span class="${types[i]}">${t.replaceAll("<", "&lt;")}</span>`);
+  function displayTokens(processed) {
+    const { tokens, types, taggatty } = processed;
+    return tokens.map((t, i) => `<span taggatty="${taggatty[i]}" class="${types[i]}">${t.replaceAll("<", "&lt;")}</span>`);
   }
 
-  const tokenPage = tokenPages['book/2'];
-  document.querySelector("div").innerHTML = displayTokens(tokenPage).join("");
+  document.querySelector("div").innerHTML = displayTokens(firstInTaggatty).join("");
 </script>
 
 <style>
+  div:hover span::before {
+    content: attr(taggatty);
+    color: unset;
+  }
+
   span {
     white-space: pre;
     font-weight: bold;
