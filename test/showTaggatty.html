@@ -1,8 +1,9 @@
 Hello sunshine!
 <script type="module">
+  import { diffAsArray } from 'https://cdn.jsdelivr.net/gh/orstavik/making-a@5/difference.js';
   import { pages } from '../src/demo.js';
   import { tokenize, toTaggatty } from '../src/tokenizer.js';
-  import { displayTokens } from '../src/displayTags.js';
+  import { displayTokens, displayDiffTable } from '../src/displayTags.js';
 
   const tokenPages = {};
   for (const page in pages) {
@@ -11,7 +12,18 @@ Hello sunshine!
     tokenPages[page].url = page;
   }
 
-  const firstInTaggatty = Object.values(tokenPages)[0];
+  document.body.append(displayTokens(Object.values(tokenPages)[0]));
 
-  document.body.insertAdjacentHTML('beforeend', displayTokens(firstInTaggatty));
+  function diffTable(pages) {
+    pages = Object.entries(pages);
+    const res = {};
+    for (let [page, obj] = pages.shift(); page && pages.length; [page, obj] = pages.shift()) {
+      res[page] = {};
+      for (const [page2, obj2] of pages)
+        res[page][page2] = diffAsArray(obj.taggatty, obj2.taggatty);
+    }
+    return res;
+  }
+
+  document.body.append(displayDiffTable(diffTable(tokenPages)));
 </script>
