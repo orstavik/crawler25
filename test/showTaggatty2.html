@@ -5,18 +5,18 @@ hello sunshine!
   import { tokenize as tokenizeRaw } from '../src/tokenizer.js';
   import { displayTokens, displayDiffTable, displayDiffTokens } from '../src/displayTags.js';
 
-  function memoize(fn) {
-    const cache = {};
-    function reuseArrays(obj) {
-      if (Array.isArray(obj)) {
-        obj = obj.map(reuseArrays);
-        return cache[JSON.stringify(obj)] ??= obj;
-      }
-      if (obj && typeof obj === 'object')
-        return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, reuseArrays(v)]));
-      return obj;
+  const cache = {};
+  function reuseArrays(obj) {
+    if (Array.isArray(obj)) {
+      obj = obj.map(reuseArrays);
+      return cache[JSON.stringify(obj)] ??= obj;
     }
+    if (obj && typeof obj === 'object')
+      return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, reuseArrays(v)]));
+    return obj;
+  }
 
+  function memoize(fn) {
     return function memoized(...args) {
       const res = fn(...args);
       return reuseArrays(res); //transform the output to a memoized [[a,b],] == [[a,b], ]
@@ -38,23 +38,26 @@ hello sunshine!
   }
 
   function jsonableDifference({ typea, typeb, a, b }) {
-    return typea === typeb && (a === b || "UVWX".includes(typea));
+    return !b || a === b || a.every((A, i) => (typea[i] === typeb[i]) && (A === b[i] || "UVWX".includes(typea[i])));
   }
-
-  function mergable(diff) {
-    return diff.every(jsonableDifference);
-  }
-
 
   function taggatrans(dict, fn) {
-    const res = {};
+    const nextDiffTable = {};
+    const consumedMap = {};
     for (const key in dict) {
-      res[key] = {};
+      if (key in consumedMap) continue;
+      nextDiffTable[key] = {};
       const inner = dict[key];
-      for (const key2 in inner)
-        res[key][key2] = inner[key2].map(d => fn(d.typea, d.typeb, d.a, d.b) || d);
+      for (const key2 in inner) {
+        if (key2 in consumedMap) continue;
+        const diff = nextDiffTable[key][key2] = inner[key2].map(d => fn(d.typea, d.typeb, d.a, d.b) || d);
+        // if (key.endsWith("unknown") && key2.endsWith("unknown"))
+        //   debugger
+        if (diff.every(jsonableDifference))
+          consumedMap[key2] = key;
+      }
     }
-    return res;
+    return { nextDiffTable, consumedMap };
   }
 
 
@@ -75,8 +78,9 @@ hello sunshine!
         const diff = diffAsArray(tokens, tokensB);
         let A = 0, B = 0;
         for (const d of diff) {
-          d.a = types.slice(A, A += d.a.length);
-          d.b = typesB.slice(B, B += d.b?.length ?? d.a.length);
+          d.typea = types.slice(A, A += d.a.length);
+          if (d.b) d.typeb = typesB.slice(B, B += d.b.length)
+          else B += d.a.length;
         }
         res[page][page2] = diff;
       }
@@ -84,8 +88,7 @@ hello sunshine!
     return res;
   }
 
-  const fullMap = diffTable(tokenPages);
-  const diffMap = dictDictMap(fullMap, ({ diff }) => diff);
+  const diffMap = diffTable(tokenPages);
   const diffValueMap = dictDictMap(diffMap, diff => diff.length);
 
 
@@ -94,14 +97,16 @@ hello sunshine!
 
   function addEmptyTextNodeImpl(typea, typeb, a, b) {
     if (typea === "" && typeb === "W")
-      return { a: [null], typea: "W", b, typeb };
+      return { a: reuseArrays([null]), typea: "W", b, typeb };
     if (typeb === "" && typea === "W")
-      return { a, typea, b: [null], typeb: "W" };
+      return { a, typea, b: reuseArrays([null]), typeb: "W" };
   }
 
 
   debugger
-  const diffMap2 = taggatrans(diffMap, addEmptyTextNodeImpl);
+  const { nextDiffTable: diffTable1, consumedMap } = taggatrans(diffMap, () => undefined);
+  debugger
+  const { nextDiffTable: diffTable2, consumedMap: consumedMap2 } = taggatrans(diffTable1, addEmptyTextNodeImpl);
 
 
   document.body.append(displayDiffTable(diffValueMap));
