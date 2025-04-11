@@ -1,0 +1,122 @@
+hello sunshine!
+<script type="module">
+  import { diffAsArray as diffAsArrayRaw } from 'https://cdn.jsdelivr.net/gh/orstavik/making-a@7/difference.js';
+  import { pages } from '../src/demo.js';
+  import { tokenize as tokenizeRaw } from '../src/tokenizer.js';
+  import { displayTokens, displayDiffTable, displayDiffTokens } from '../src/displayTags.js';
+
+  function memoize(fn) {
+    const cache = {};
+    function reuseArrays(obj) {
+      if (Array.isArray(obj)) {
+        obj = obj.map(reuseArrays);
+        return cache[JSON.stringify(obj)] ??= obj;
+      }
+      if (obj && typeof obj === 'object')
+        return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, reuseArrays(v)]));
+      return obj;
+    }
+
+    return function memoized(...args) {
+      const res = fn(...args);
+      return reuseArrays(res); //transform the output to a memoized [[a,b],] == [[a,b], ]
+    }
+  }
+
+  const tokenize = memoize(tokenizeRaw);
+  const diffAsArray = memoize(diffAsArrayRaw);
+
+  function dictDictMap(dict, cbImmutable) {
+    const res = {};
+    for (const key in dict) {
+      res[key] = {};
+      const inner = dict[key];
+      for (const key2 in inner)
+        res[key][key2] = cbImmutable(inner[key2]);
+    }
+    return res;
+  }
+
+  function jsonableDifference({ typea, typeb, a, b }) {
+    return typea === typeb && (a === b || "UVWX".includes(typea));
+  }
+
+  function mergable(diff) {
+    return diff.every(jsonableDifference);
+  }
+
+
+  function taggatrans(dict, fn) {
+    const res = {};
+    for (const key in dict) {
+      res[key] = {};
+      const inner = dict[key];
+      for (const key2 in inner)
+        res[key][key2] = inner[key2].map(d => fn(d.typea, d.typeb, d.a, d.b) || d);
+    }
+    return res;
+  }
+
+
+
+
+
+  const tokenPages = {};
+  for (const url in pages)
+    tokenPages[url] = { ...tokenize(pages[url]), url };
+
+  function diffTable(pages) {
+    pages = Object.entries(pages);
+    const res = {};
+    for (let i = 0; i < pages.length - 1; i++) {
+      const [page, { tokens, types }] = pages[i];
+      res[page] = {};
+      for (const [page2, { tokens: tokensB, types: typesB }] of pages.slice(i + 1)) {
+        const diff = diffAsArray(tokens, tokensB);
+        let A = 0, B = 0;
+        for (const d of diff) {
+          d.a = types.slice(A, A += d.a.length);
+          d.b = typesB.slice(B, B += d.b?.length ?? d.a.length);
+        }
+        res[page][page2] = diff;
+      }
+    }
+    return res;
+  }
+
+  const fullMap = diffTable(tokenPages);
+  const diffMap = dictDictMap(fullMap, ({ diff }) => diff);
+  const diffValueMap = dictDictMap(diffMap, diff => diff.length);
+
+
+  //type must be the same, but only the values of UVWXs can be different.
+  //so if this is true for one of the entries, then we can delete the primary key, and then only use the 
+
+  function addEmptyTextNodeImpl(typea, typeb, a, b) {
+    if (typea === "" && typeb === "W")
+      return { a: [null], typea: "W", b, typeb };
+    if (typeb === "" && typea === "W")
+      return { a, typea, b: [null], typeb: "W" };
+  }
+
+
+  debugger
+  const diffMap2 = taggatrans(diffMap, addEmptyTextNodeImpl);
+
+
+  document.body.append(displayDiffTable(diffValueMap));
+
+  let xxx = 0;
+  document.body.lastElementChild.addEventListener("click", e => {
+    const target = e.composedPath()[0];
+    if (!target.matches("td[page][page2]"))
+      return;
+    const page = target.getAttribute('page');
+    const page2 = target.getAttribute('page2');
+    const { diff, a, b } = diffMap[page][page2];
+    document.body.append(displayDiffTokens(a, b, { x: 10, y: 10 }));
+  });
+
+  document.body.append(displayTokens(Object.values(tokenPages)[0]));
+
+</script>
